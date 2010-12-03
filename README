@@ -1,4 +1,4 @@
-About
+ABOUT
 =====
 
 This is python bindings to the DPMS X11 extension module for controlling
@@ -20,9 +20,15 @@ from the command line.
 INSTALL
 =======
 
-Install libXext development package. For example, on RedHat/Fedora:
+Install libXext and python development packages installed. For
+example, on RedHat/Fedora:
 
-    yum install libXext-devel
+    yum install libXext-devel python-devel
+
+On Ubuntu:
+
+    apt-get install libxext6-dev python-dev
+
 
 Then run:
 
@@ -32,4 +38,8 @@ Then as root, run:
 
     python setup.py install
 
-That's it.
+That's it. Now run:
+
+    python example.py
+
+to test it out.
