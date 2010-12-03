@@ -1,0 +1,29 @@
+About
+=====
+
+This is python bindings to the DPMS X11 extension module for controlling
+your monitor power savings state.
+
+The DPMS interface lets you control the power level of your monitor
+(On, Standby, Suspend, or Off).  It is a simple interface that lets
+you get/set timeouts of inactivity to enter these states or you can
+force it to enter any of the states.
+
+See example.py on how to use it. This file should be sufficient on how
+to use it. It first shows how to query all the different settings and
+then shows how to set them.
+
+See also 'man xset' for a program that lets you modify the DPMS state
+from the command line.
+
+
+INSTALL
+=======
+
+Run:
+
+    python setup.py build
+
+Then as root, run:
+
+    python setup.py install
