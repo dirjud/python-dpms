@@ -20,10 +20,16 @@ from the command line.
 INSTALL
 =======
 
-Run:
+Install libXext development package. For example, on RedHat/Fedora:
+
+    yum install libXext-devel
+
+Then run:
 
     python setup.py build
 
 Then as root, run:
 
     python setup.py install
+
+That's it.
