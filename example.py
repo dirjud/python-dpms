@@ -1,6 +1,8 @@
+from __future__ import print_function
+
 import dpms
 
-d = dpms.DPMS() # to use the current display, or alternatively DPMS(":1")
+d = dpms.DPMS()  # to use the current display, or alternatively DPMS(":1")
 
 # print up the display
 print("Display         :", d.display())
@@ -9,12 +11,10 @@ print("Display         :", d.display())
 print("Query Extension :", d.QueryExtension())
 
 # query Capable, not sure what it does
-print("Capable         :", d.Capable()) 
+print("Capable         :", d.Capable())
 
 # query current version
 print("Version         :", d.GetVersion())
-
-
 
 # query the current state of things
 (level, enabled) = d.Info()
@@ -58,11 +58,11 @@ else:
 d.ForceLevel(level)
 
 # if you wanted to force the monitor off, you could
-#d.ForceLevel(dpms.DPMSModeOff)
+# d.ForceLevel(dpms.DPMSModeOff)
 
 # to force it back on
-#d.ForceLevel(dpms.DPMSModeOn)
+# d.ForceLevel(dpms.DPMSModeOn)
 
 # You can also suspend or standby
-#d.ForceLevel(dpms.DPMSModeSuspend)
-#d.ForceLevel(dpms.DPMSModeStandby)
+# d.ForceLevel(dpms.DPMSModeSuspend)
+# d.ForceLevel(dpms.DPMSModeStandby)
