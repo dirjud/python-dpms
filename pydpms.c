@@ -110,7 +110,7 @@ static PyObject *pyDPMS_SetTimeouts(pyDPMSObject *self, PyObject *args, PyObject
 
   Status ret = DPMSSetTimeouts(self->dpy, standby, suspend, off);
   if(ret == 1) {
-    Py_RETURN_NONE;
+    return pyDPMS_GetTimeouts(self, args, kwds);
   } else {
     PyErr_SetString(PyExc_Exception, "Bad arguments");
     return NULL;
@@ -172,7 +172,7 @@ static PyMethodDef pyDPMS_methods[] = {
     {"GetVersion", (PyCFunction)pyDPMS_GetVersion, METH_NOARGS, "DPMSGetVersion wrapper. Returns tuple (major, minor) version upon success or throws exception." },
     {"Capable", (PyCFunction)pyDPMS_Capable, METH_NOARGS, "DPMSCapable wrapper. Returns bool." },
     {"GetTimeouts", (PyCFunction)pyDPMS_GetTimeouts, METH_NOARGS, "DPMSGetTimeouts wrapper. Returns tuple (standby, suspend, off) or raises an exception on error." },
-    {"SetTimeouts", (PyCFunction)pyDPMS_SetTimeouts, METH_VARARGS | METH_KEYWORDS, "DPMSSetTimeouts wrapper. Arguments are (int standby, int suspend, int off). Returns None. Raises Exception if an invalid timeouts provided." },
+    {"SetTimeouts", (PyCFunction)pyDPMS_SetTimeouts, METH_VARARGS | METH_KEYWORDS, "DPMSSetTimeouts wrapper. Arguments are (int standby, int suspend, int off). Returns tuple with new values (standby, suspend, off). Raises Exception if an invalid timeouts provided." },
 
     {"Enable", (PyCFunction)pyDPMS_Enable, METH_NOARGS, "DPMSEnable wrapper." },
     {"Disable", (PyCFunction)pyDPMS_Disable, METH_NOARGS, "DPMSDisable wrapper." },
