@@ -6,17 +6,16 @@
 #include <X11/Xutil.h>
 #include <X11/extensions/dpms.h>
 
-
 typedef struct {
   PyObject_HEAD
   Display *dpy;
-  PyStringObject *display;
+  PyBytesObject *display;
 } pyDPMSObject;
 
-static char *get_disp(PyStringObject *display) {
+static char *get_disp(PyBytesObject *display) {
   if(!display)
     return NULL;
-  return PyString_AS_STRING(display);
+  return PyBytes_AS_STRING(display);
 }
 
 static int pyDPMS_init(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
@@ -25,7 +24,7 @@ static int pyDPMS_init(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
   self->display = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|S", kwlist, &(self->display))){
     PyErr_SetString(PyExc_Exception, "optional display keywork must be a stirng. e.g. ':0'");
-    return -1; 
+    return -1;
   }
   if(self->display) { Py_INCREF(self->display); }
 
@@ -43,15 +42,15 @@ static void pyDPMS_dealloc(PyObject* _self) {
   if(self->dpy) { XCloseDisplay(self->dpy); }
   self->dpy = NULL;
   self->display = NULL;
-  self->ob_type->tp_free((PyObject*)self);
+  Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 PyObject *pyDPMS_str(PyObject *self) {
-  return PyString_FromFormat("DPMS(display=%s)", XDisplayName(get_disp(((pyDPMSObject *) self)->display)));
+  return PyUnicode_FromFormat("DPMS(display=%s)", XDisplayName(get_disp(((pyDPMSObject *) self)->display)));
 }
 
 static PyObject *pyDPMS_display(pyDPMSObject* self) {
-  return PyString_FromString(XDisplayName(get_disp(self->display)));
+  return PyUnicode_FromString(XDisplayName(get_disp(self->display)));
 }
 
 static PyObject *pyDPMS_QueryExtension(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
@@ -80,7 +79,7 @@ static PyObject *pyDPMS_GetTimeouts(pyDPMSObject *self, PyObject *args, PyObject
     return Py_BuildValue("iii", standby, suspend, off);
   } else {
     PyErr_SetString(PyExc_Exception, "Unknown Error getting timeouts.");
-    return NULL; 
+    return NULL;
   }
 }
 
@@ -89,7 +88,7 @@ static PyObject *pyDPMS_SetTimeouts(pyDPMSObject *self, PyObject *args, PyObject
   CARD16 standby, suspend, off;
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "HHH", kwlist, &standby, &suspend, &off)) {
     PyErr_SetString(PyExc_Exception, "Bad arguments. should be (standby, suspend, off)");
-    return NULL; 
+    return NULL;
   }
 
   Status ret = DPMSSetTimeouts(self->dpy, standby, suspend, off);
@@ -106,7 +105,7 @@ static PyObject *pyDPMS_Enable(pyDPMSObject *self, PyObject *args, PyObject *kwd
     Py_RETURN_NONE;
   } else {
     PyErr_SetString(PyExc_Exception, "Unknown Error Enabling DPMS.");
-    return NULL; 
+    return NULL;
   }
 }
 
@@ -115,7 +114,7 @@ static PyObject *pyDPMS_Disable(pyDPMSObject *self, PyObject *args, PyObject *kw
     Py_RETURN_NONE;
   } else {
     PyErr_SetString(PyExc_Exception, "Unknown Error Disabling DPMS.");
-    return NULL; 
+    return NULL;
   }
 }
 
@@ -124,7 +123,7 @@ static PyObject *pyDPMS_ForceLevel(pyDPMSObject *self, PyObject *args, PyObject 
   CARD16 level;
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist, &level)) {
     PyErr_SetString(PyExc_Exception, "Bad arguments. should be (level)");
-    return NULL; 
+    return NULL;
   }
 
   Status ret = DPMSForceLevel(self->dpy, level);
@@ -132,10 +131,10 @@ static PyObject *pyDPMS_ForceLevel(pyDPMSObject *self, PyObject *args, PyObject 
     Py_RETURN_NONE;
   } else if(ret == BadValue) {
     PyErr_SetString(PyExc_Exception, "Bad Level.");
-    return NULL; 
+    return NULL;
   } else {
     PyErr_SetString(PyExc_Exception, "Unknown Error ForceLevel.");
-    return NULL; 
+    return NULL;
   }
 }
 
@@ -146,7 +145,7 @@ static PyObject *pyDPMS_Info(pyDPMSObject *self, PyObject *args, PyObject *kwds)
     return Py_BuildValue("iN", power_level, PyBool_FromLong(state));
   } else {
     PyErr_SetString(PyExc_Exception, "Unknown Error getting Info.");
-    return NULL; 
+    return NULL;
   }
 }
 
@@ -162,78 +161,86 @@ static PyMethodDef pyDPMS_methods[] = {
     {"Disable", (PyCFunction)pyDPMS_Disable, METH_NOARGS, "DPMSDisable wrapper." },
     {"ForceLevel", (PyCFunction)pyDPMS_ForceLevel, METH_VARARGS | METH_KEYWORDS, "DPMSForceLevel wrapper. Arguments are (int level). Returns None. Raises Exception if an invalid level provided. Use DPMSModeOn, DPMSModeStandby, DPMSModeSuspend, DPMSModeOff module attributes for level." },
     {"Info", (PyCFunction)pyDPMS_Info, METH_NOARGS, "DPMSInfo wrapper.  Returns tuple (power_level, state). Raises Exception on error." },
-
-    
-    //    {"QueryExtension", (PyCFunction)pyDPMS_QueryExtension, METH_VARARGS | METH_KEYWORDS, "DPMSQueryExtension wrapper" },
-//    {"copy", (PyCFunction)pyimg_copy, METH_NOARGS,
-//     "Returns a copy of the image where the image data is copied."
-//    },
+    /* {"QueryExtension", (PyCFunction)pyDPMS_QueryExtension, METH_VARARGS | METH_KEYWORDS, "DPMSQueryExtension wrapper" }, */
+    /* {"copy", (PyCFunction)pyimg_copy, METH_NOARGS, "Returns a copy of the image where the image data is copied." }, */
     {NULL}  /* Sentinel */
 };
 
 
 static PyTypeObject pyDPMSType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                     /*ob_size*/
-    "dpms.DPMS",           /*tp_name*/
-    sizeof(pyDPMSObject),     /*tp_basicsize*/
-    0,                         /*tp_itemsize*/
-    pyDPMS_dealloc,            /*tp_dealloc*/
-    0,                         /*tp_print*/
-    0,                         /*tp_getattr*/
-    0,                         /*tp_setattr*/
-    0,                         /*tp_compare*/
-    pyDPMS_str,                 /*tp_repr*/
-    0,                         /*tp_as_number*/
-    0,                         /*tp_as_sequence*/
-    0,                         /*tp_as_mapping*/
-    0,                         /*tp_hash */
-    0,                         /*tp_call*/
-    pyDPMS_str,                 /*tp_str*/
-    0,                         /*tp_getattro*/
-    0,                         /*tp_setattro*/
-    0,                         /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,    /*tp_flags*/
-    "Python DPMS wrapper", /* tp_doc */
-    0,		               /* tp_traverse */
-    0,		               /* tp_clear */
-    0,		               /* tp_richcompare */
-    0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
-    0,		               /* tp_iternext */
-    pyDPMS_methods,            /* tp_methods */
-    0,                         /* tp_members */
-    0,                         /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    (initproc)pyDPMS_init,      /* tp_init */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "dpms.DPMS",                              /* tp_name*/
+    sizeof(pyDPMSObject),                     /* tp_basicsize*/
+    0,                                        /* tp_itemsize*/
+    pyDPMS_dealloc,                           /* tp_dealloc*/
+    0,                                        /* tp_print*/
+    0,                                        /* tp_getattr*/
+    0,                                        /* tp_setattr*/
+    0,                                        /* tp_compare*/
+    pyDPMS_str,                               /* tp_repr*/
+    0,                                        /* tp_as_number*/
+    0,                                        /* tp_as_sequence*/
+    0,                                        /* tp_as_mapping*/
+    0,                                        /* tp_hash */
+    0,                                        /* tp_call*/
+    pyDPMS_str,                               /* tp_str*/
+    0,                                        /* tp_getattro*/
+    0,                                        /* tp_setattro*/
+    0,                                        /* tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags*/
+    "Python DPMS wrapper",                    /* tp_doc */
+    0,                                        /* tp_traverse */
+    0,                                        /* tp_clear */
+    0,                                        /* tp_richcompare */
+    0,                                        /* tp_weaklistoffset */
+    0,                                        /* tp_iter */
+    0,                                        /* tp_iternext */
+    pyDPMS_methods,                           /* tp_methods */
+    0,                                        /* tp_members */
+    0,                                        /* tp_getset */
+    0,                                        /* tp_base */
+    0,                                        /* tp_dict */
+    0,                                        /* tp_descr_get */
+    0,                                        /* tp_descr_set */
+    0,                                        /* tp_dictoffset */
+    (initproc)pyDPMS_init,                    /* tp_init */
 };
 
 static PyMethodDef dpms_methods[] = {
   {NULL}  /* Sentinel */
 };
 
+static struct PyModuleDef dpms_def = {
+  PyModuleDef_HEAD_INIT,
+  "dpms",                                  /* m_name */
+  "Python bindings to DPMS X11 extension", /* m_doc */
+  -1,                                      /* m_size */
+  dpms_methods,                            /* m_methods */
+  NULL,                                    /* m_reload */
+  NULL,                                    /* m_traverse */
+  NULL,                                    /* m_clear */
+  NULL,                                    /* m_free */
+};
+
 #ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
 #define PyMODINIT_FUNC void
 #endif
-PyMODINIT_FUNC initdpms(void) {
-    PyObject* m;
+
+PyMODINIT_FUNC PyInit_dpms(void) {
+    PyObject* module;
 
     pyDPMSType.tp_new = PyType_GenericNew;
     if (PyType_Ready(&pyDPMSType) < 0)
-        return;
-
-    m = Py_InitModule3("dpms", dpms_methods,
-                       "Python bindings to DPMS X11 extension");
+        return NULL;
 
     Py_INCREF(&pyDPMSType);
-    PyModule_AddObject(m, "DPMS", (PyObject *)&pyDPMSType);
+    module = PyModule_Create(&dpms_def);
 
-    PyModule_AddObject(m, "DPMSModeOn",      PyInt_FromLong(DPMSModeOn     ));
-    PyModule_AddObject(m, "DPMSModeStandby", PyInt_FromLong(DPMSModeStandby));
-    PyModule_AddObject(m, "DPMSModeSuspend", PyInt_FromLong(DPMSModeSuspend));
-    PyModule_AddObject(m, "DPMSModeOff",     PyInt_FromLong(DPMSModeOff    ));
+    PyModule_AddObject(module, "DPMS",            (PyObject *)&pyDPMSType);
+    PyModule_AddObject(module, "DPMSModeOn",      PyLong_FromLong(DPMSModeOn     ));
+    PyModule_AddObject(module, "DPMSModeStandby", PyLong_FromLong(DPMSModeStandby));
+    PyModule_AddObject(module, "DPMSModeSuspend", PyLong_FromLong(DPMSModeSuspend));
+    PyModule_AddObject(module, "DPMSModeOff",     PyLong_FromLong(DPMSModeOff    ));
+
+    return module;
 }

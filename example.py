@@ -3,23 +3,23 @@ import dpms
 d = dpms.DPMS() # to use the current display, or alternatively DPMS(":1")
 
 # print up the display
-print "Display         :", d.display()
+print("Display         :", d.display())
 
 # query extension, should return True as the first element
-print "Query Extension :", d.QueryExtension()
+print("Query Extension :", d.QueryExtension())
 
 # query Capable, not sure what it does
-print "Capable         :", d.Capable() 
+print("Capable         :", d.Capable()) 
 
 # query current version
-print "Version         :", d.GetVersion()
+print("Version         :", d.GetVersion())
 
 
 
 # query the current state of things
 (level, enabled) = d.Info()
 
-print "DPMS enabled    :", enabled
+print("DPMS enabled    :", enabled)
 if(level == dpms.DPMSModeOn):
     current_level = "On"
 elif(level == dpms.DPMSModeStandby):
@@ -31,14 +31,14 @@ elif(level == dpms.DPMSModeOff):
 else:
     current_level = "Unknown (%d)" % level
 
-print "Current Level   :", current_level, "(", level, ")"
+print("Current Level   :", current_level, "(", level, ")")
 
 # query the current timeout settings
 (standby, suspend, off) = d.GetTimeouts()
-print "Timeouts"
-print "  Standby       :", standby
-print "  Suspend       :", suspend
-print "  Off           :", off
+print("Timeouts")
+print("  Standby       :", standby)
+print("  Suspend       :", suspend)
+print("  Off           :", off)
 
 
 # We have queried everything, now we will set everything back to its
