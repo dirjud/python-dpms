@@ -51,4 +51,10 @@ to test it out. Also try the turnoff.py script:
     python turnoff.py
 
 It should turn off your monitor after a 1 second wait. Press any key
-to wake it back up. 
+to wake it back up.
+
+
+COMPATIBILTY
+============
+
+This fork should work with both Python 2 (>=2.6) and Python 3 (>=3.2).
