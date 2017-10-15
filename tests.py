@@ -1,20 +1,22 @@
 import dpms
 import os
+import sys
 import unittest
 
 
 class TestDpms(unittest.TestCase):
     def setUp(self):
         self.d = dpms.DPMS()
+        self.d.Enable()
 
     def test_init(self):
-        with self.assertRaisesRegexp(
+        with self.checkRaiseRegex(
             Exception,
             "Optional display keyword must be a string. e.g. ':0'"
         ):
             dpms.DPMS(display=1)
 
-        with self.assertRaisesRegexp(
+        with self.checkRaiseRegex(
             Exception,
             "Cannot open display"
         ):
@@ -47,7 +49,7 @@ class TestDpms(unittest.TestCase):
     def test_SetTimeouts(self):
         current_timeouts = self.d.GetTimeouts()
 
-        with self.assertRaisesRegexp(
+        with self.checkRaiseRegex(
             Exception,
             "Bad arguments. Should be \(int standby, int suspend, int off\)."
         ):
@@ -62,31 +64,24 @@ class TestDpms(unittest.TestCase):
         # Restore original timeouts
         self.d.SetTimeouts(*current_timeouts),
 
-    def test_EnableDisable(self):
-        _, current_state = self.d.Info()
-
-        self.d.Disable()
-        self.assertFalse(self.d.Info()[1])
-
+    def test_Enable(self):
         self.d.Enable()
         self.assertTrue(self.d.Info()[1])
 
-        # Restore original state
-        if current_state:
-            self.d.Enable()
-        else:
-            self.d.Disable()
+    def test_Disable(self):
+        self.d.Disable()
+        self.assertFalse(self.d.Info()[1])
 
     def test_ForceLevel(self):
         current_level, _ = self.d.Info()
 
-        with self.assertRaisesRegexp(
+        with self.checkRaiseRegex(
             Exception,
             "Bad arguments. Should be \(int level\)."
         ):
             self.d.ForceLevel(level="0")
 
-        with self.assertRaisesRegexp(
+        with self.checkRaiseRegex(
             Exception,
             "Bad level."
         ):
@@ -107,6 +102,12 @@ class TestDpms(unittest.TestCase):
         level, state = info
         self.assertTrue(type(level) is int)
         self.assertTrue(type(state) is bool)
+
+    # From https://github.com/swagger-api/swagger-codegen/pull/2529
+    def checkRaiseRegex(self, expected_exception, expected_regex):
+        if sys.version_info < (3, 0):
+            return self.assertRaisesRegexp(expected_exception, expected_regex)
+        return self.assertRaisesRegex(expected_exception, expected_regex)
 
 
 if __name__ == "__main__":
