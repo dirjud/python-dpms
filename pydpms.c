@@ -39,8 +39,8 @@ static int pyDPMS_init(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
   static char *kwlist[] = {"display", NULL};
 
   self->display = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|S", kwlist, &(self->display))){
-    PyErr_SetString(PyExc_Exception, "optional display keywork must be a stirng. e.g. ':0'");
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &(self->display))){
+    PyErr_SetString(PyExc_Exception, "Optional display keyword must be a string. e.g. ':0'");
     return -1;
   }
   if(self->display) { Py_INCREF(self->display); }
@@ -66,7 +66,7 @@ PyObject *pyDPMS_str(PyObject *self) {
   return PyUnicode_FromFormat("DPMS(display=%s)", XDisplayName(get_disp(((pyDPMSObject *) self)->display)));
 }
 
-static PyObject *pyDPMS_display(pyDPMSObject* self) {
+static PyObject *pyDPMS_Display(pyDPMSObject* self) {
   return PyUnicode_FromString(XDisplayName(get_disp(self->display)));
 }
 
@@ -104,7 +104,7 @@ static PyObject *pyDPMS_SetTimeouts(pyDPMSObject *self, PyObject *args, PyObject
   static char *kwlist[] = {"standby", "suspend", "off", NULL};
   CARD16 standby, suspend, off;
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "HHH", kwlist, &standby, &suspend, &off)) {
-    PyErr_SetString(PyExc_Exception, "Bad arguments. should be (standby, suspend, off)");
+    PyErr_SetString(PyExc_Exception, "Bad arguments. Should be (int standby, int suspend, int off).");
     return NULL;
   }
 
@@ -139,7 +139,7 @@ static PyObject *pyDPMS_ForceLevel(pyDPMSObject *self, PyObject *args, PyObject 
   static char *kwlist[] = {"level", NULL};
   CARD16 level;
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist, &level)) {
-    PyErr_SetString(PyExc_Exception, "Bad arguments. should be (level)");
+    PyErr_SetString(PyExc_Exception, "Bad arguments. Should be (int level).");
     return NULL;
   }
 
@@ -147,7 +147,7 @@ static PyObject *pyDPMS_ForceLevel(pyDPMSObject *self, PyObject *args, PyObject 
   if(ret == 1) {
     Py_RETURN_NONE;
   } else if(ret == BadValue) {
-    PyErr_SetString(PyExc_Exception, "Bad Level.");
+    PyErr_SetString(PyExc_Exception, "Bad level.");
     return NULL;
   } else {
     PyErr_SetString(PyExc_Exception, "Unknown Error ForceLevel.");
@@ -167,7 +167,7 @@ static PyObject *pyDPMS_Info(pyDPMSObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyMethodDef pyDPMS_methods[] = {
-    {"display", (PyCFunction)pyDPMS_display, METH_NOARGS, "Returns the display variable of this DPMS"},
+    {"Display", (PyCFunction)pyDPMS_Display, METH_NOARGS, "Returns the display variable of this DPMS"},
     {"QueryExtension", (PyCFunction)pyDPMS_QueryExtension, METH_NOARGS, "DPMSQueryExtension wrapper. Takes no arguments and returns a tuple (result bool, event_basep int, error_basep int)" },
     {"GetVersion", (PyCFunction)pyDPMS_GetVersion, METH_NOARGS, "DPMSGetVersion wrapper. Returns tuple (major, minor) version upon success or throws exception." },
     {"Capable", (PyCFunction)pyDPMS_Capable, METH_NOARGS, "DPMSCapable wrapper. Returns bool." },

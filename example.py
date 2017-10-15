@@ -5,7 +5,7 @@ import dpms
 d = dpms.DPMS()  # to use the current display, or alternatively DPMS(":1")
 
 # print up the display
-print("Display         :", d.display())
+print("Display         :", d.Display())
 
 # query extension, should return True as the first element
 print("Query Extension :", d.QueryExtension())
