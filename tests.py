@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import dpms
 import os
 import sys
@@ -8,6 +10,18 @@ class TestDpms(unittest.TestCase):
     def setUp(self):
         self.d = dpms.DPMS()
         self.d.Enable()
+        # Using xfvb or a monitor that does not support DPMS,
+        # you may get X11 errors after some methods.
+        self.dpms_level, self.dpms_status = self.d.Info()
+        self.current_timeouts = self.d.GetTimeouts()
+
+    def tearDown(self):
+        if self.dpms_status:
+            self.d.Enable()
+            self.d.ForceLevel(self.dpms_level)
+            self.d.SetTimeouts(*self.current_timeouts)
+        else:
+            self.d.Disable()
 
     def test_init(self):
         with self.checkRaiseRegex(
@@ -47,8 +61,6 @@ class TestDpms(unittest.TestCase):
             self.assertTrue(type(timeout) is int)
 
     def test_SetTimeouts(self):
-        current_timeouts = self.d.GetTimeouts()
-
         with self.checkRaiseRegex(
             Exception,
             "Bad arguments. Should be \(int standby, int suspend, int off\)."
@@ -61,12 +73,10 @@ class TestDpms(unittest.TestCase):
             (100, 100, 100)
         )
 
-        # Restore original timeouts
-        self.d.SetTimeouts(*current_timeouts),
-
     def test_Enable(self):
         self.d.Enable()
-        self.assertTrue(self.d.Info()[1])
+        if self.dpms_status:
+            self.assertTrue(self.d.Info()[1])
 
     def test_Disable(self):
         self.d.Disable()
@@ -87,13 +97,12 @@ class TestDpms(unittest.TestCase):
         ):
             self.d.ForceLevel(level=1000)
 
-        # Your screen may flicker during this test
-        self.d.ForceLevel(level=dpms.DPMSModeOn)
-        self.d.ForceLevel(level=dpms.DPMSModeStandby)
-        self.d.ForceLevel(level=dpms.DPMSModeSuspend)
-        self.d.ForceLevel(level=dpms.DPMSModeOff)
-        # Restore original level
-        self.d.ForceLevel(level=current_level)
+        if self.dpms_status:
+            print("\nYour monitor may turnoff during this test", file=sys.stderr)
+            self.d.ForceLevel(level=dpms.DPMSModeOn)
+            self.d.ForceLevel(level=dpms.DPMSModeStandby)
+            self.d.ForceLevel(level=dpms.DPMSModeSuspend)
+            self.d.ForceLevel(level=dpms.DPMSModeOff)
 
     def test_Info(self):
         info = self.d.Info()
