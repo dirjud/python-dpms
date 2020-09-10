@@ -1,6 +1,6 @@
 from distutils.core import setup, Extension
 
-module = Extension('dpms', libraries=['Xext', ], sources=['pydpms.c'])
+module = Extension('dpms', libraries=['Xext', ], sources=['./src/pydpms.c'])
 
 if __name__ == "__main__":
     setup(
