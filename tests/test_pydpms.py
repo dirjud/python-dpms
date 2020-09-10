@@ -1,9 +1,11 @@
 from __future__ import print_function
 
-import dpms
 import os
 import sys
+import time
 import unittest
+
+import dpms
 
 print(
     """\
@@ -15,9 +17,20 @@ Your monitor may turnoff during these tests
 )
 
 
+def try_dpms(tries=3, wait_time=1, *args, **kwargs):
+    for _ in range(tries):
+        try:
+            return dpms.DPMS(*args, **kwargs)
+        except Exception as e:
+            print("Failed with '{}', retrying...".format(e))
+            time.sleep(wait_time)
+
+    raise Exception("Failed to get DPMS.")
+
+
 class TestDpms(unittest.TestCase):
     def setUp(self):
-        self.d = dpms.DPMS()
+        self.d = try_dpms()
         self.d.enable()
         # Using xfvb or a monitor that does not support DPMS,
         # you may get X11 errors after some methods.

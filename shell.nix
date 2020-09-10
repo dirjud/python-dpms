@@ -32,7 +32,7 @@ in mkShell {
 
     source "${venvDir}/bin/activate"
 
-    python setup.py install
+    pip install -e .
   '';
 }
 
