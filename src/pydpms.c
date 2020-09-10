@@ -6,23 +6,6 @@
 #include <X11/Xutil.h>
 #include <X11/extensions/dpms.h>
 
-/* http://python3porting.com/cextensions.html */
-#if PY_MAJOR_VERSION >= 3
-  #define MOD_ERROR_VAL NULL
-  #define MOD_SUCCESS_VAL(val) val
-  #define MOD_INIT(name) PyMODINIT_FUNC PyInit_##name(void)
-  #define MOD_DEF(ob, name, doc, methods) \
-          static struct PyModuleDef moduledef = { \
-            PyModuleDef_HEAD_INIT, name, doc, -1, methods, }; \
-          ob = PyModule_Create(&moduledef);
-#else
-  #define MOD_ERROR_VAL
-  #define MOD_SUCCESS_VAL(val)
-  #define MOD_INIT(name) void init##name(void)
-  #define MOD_DEF(ob, name, doc, methods) \
-          ob = Py_InitModule3(name, methods, doc);
-#endif
-
 typedef struct {
   PyObject_HEAD
   Display *dpy;
@@ -230,22 +213,29 @@ static PyMethodDef dpms_methods[] = {
 #define PyMODINIT_FUNC void
 #endif
 
-MOD_INIT(dpms) {
+PyMODINIT_FUNC PyInit_dpms(void) {
     PyObject* module;
 
     pyDPMSType.tp_new = PyType_GenericNew;
     if (PyType_Ready(&pyDPMSType) < 0)
-        return MOD_ERROR_VAL;
+        return NULL;
 
     Py_INCREF(&pyDPMSType);
 
-    MOD_DEF(module, "dpms", "Python bindings to DPMS X11 Extension", dpms_methods);
+    static struct PyModuleDef moduledef = {
+      PyModuleDef_HEAD_INIT,
+      "dpms",
+      "Python bindings to DPMS X11 Extension",
+      -1,
+      dpms_methods,
+    };
 
+    module = PyModule_Create(&moduledef);
     PyModule_AddObject(module, "DPMS",            (PyObject *)&pyDPMSType);
     PyModule_AddObject(module, "DPMSModeOn",      PyLong_FromLong(DPMSModeOn     ));
     PyModule_AddObject(module, "DPMSModeStandby", PyLong_FromLong(DPMSModeStandby));
     PyModule_AddObject(module, "DPMSModeSuspend", PyLong_FromLong(DPMSModeSuspend));
     PyModule_AddObject(module, "DPMSModeOff",     PyLong_FromLong(DPMSModeOff    ));
 
-    return MOD_SUCCESS_VAL(module);
+    return module;
 }

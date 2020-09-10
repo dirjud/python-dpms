@@ -24,12 +24,12 @@ class TestDpms(unittest.TestCase):
             self.d.disable()
 
     def test_init(self):
-        with self.checkRaiseRegex(
+        with self.assertRaisesRegex(
             Exception, "Optional display keyword must be a string. e.g. ':0'"
         ):
             dpms.DPMS(display=1)
 
-        with self.checkRaiseRegex(Exception, "Cannot open display"):
+        with self.assertRaisesRegex(Exception, "Cannot open display"):
             dpms.DPMS(display="invalid")
 
     def test_display(self):
@@ -54,7 +54,7 @@ class TestDpms(unittest.TestCase):
             self.assertTrue(type(timeout) is int)
 
     def test_set_timeouts(self):
-        with self.checkRaiseRegex(
+        with self.assertRaisesRegex(
             Exception, "Bad arguments. Should be \(int standby, int suspend, int off\)."
         ):
             self.d.set_timeouts(standby="600", suspend="600", off="600")
@@ -74,10 +74,12 @@ class TestDpms(unittest.TestCase):
     def test_force_level(self):
         current_level, _ = self.d.info()
 
-        with self.checkRaiseRegex(Exception, "Bad arguments. Should be \(int level\)."):
+        with self.assertRaisesRegex(
+            Exception, "Bad arguments. Should be \(int level\)."
+        ):
             self.d.force_level(level="0")
 
-        with self.checkRaiseRegex(Exception, "Bad level."):
+        with self.assertRaisesRegex(Exception, "Bad level."):
             self.d.force_level(level=1000)
 
         if self.dpms_status:
@@ -94,12 +96,6 @@ class TestDpms(unittest.TestCase):
         level, state = info
         self.assertTrue(type(level) is int)
         self.assertTrue(type(state) is bool)
-
-    # From https://github.com/swagger-api/swagger-codegen/pull/2529
-    def checkRaiseRegex(self, expected_exception, expected_regex):
-        if sys.version_info < (3, 0):
-            return self.assertRaisesRegexp(expected_exception, expected_regex)
-        return self.assertRaisesRegex(expected_exception, expected_regex)
 
 
 if __name__ == "__main__":
