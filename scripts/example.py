@@ -1,32 +1,30 @@
-from __future__ import print_function
-
 import dpms
 
 d = dpms.DPMS()  # to use the current display, or alternatively DPMS(":1")
 
 # print up the display
-print("Display         :", d.Display())
+print("Display         :", d.display())
 
 # query extension, should return True as the first element
-print("Query Extension :", d.QueryExtension())
+print("Query Extension :", d.query_extension())
 
 # query Capable, not sure what it does
-print("Capable         :", d.Capable())
+print("Capable         :", d.capable())
 
 # query current version
-print("Version         :", d.GetVersion())
+print("Version         :", d.get_version())
 
 # query the current state of things
-(level, enabled) = d.Info()
+(level, enabled) = d.info()
 
 print("DPMS enabled    :", enabled)
-if(level == dpms.DPMSModeOn):
+if level == dpms.DPMSModeOn:
     current_level = "On"
-elif(level == dpms.DPMSModeStandby):
+elif level == dpms.DPMSModeStandby:
     current_level = "Standby"
-elif(level == dpms.DPMSModeSuspend):
+elif level == dpms.DPMSModeSuspend:
     current_level = "Suspend"
-elif(level == dpms.DPMSModeOff):
+elif level == dpms.DPMSModeOff:
     current_level = "Off"
 else:
     current_level = "Unknown (%d)" % level
@@ -34,7 +32,7 @@ else:
 print("Current Level   :", current_level, "(", level, ")")
 
 # query the current timeout settings
-(standby, suspend, off) = d.GetTimeouts()
+(standby, suspend, off) = d.get_timeouts()
 print("Timeouts")
 print("  Standby       :", standby)
 print("  Suspend       :", suspend)
@@ -46,23 +44,23 @@ print("  Off           :", off)
 # any state and so that you can see examples of setting state.
 
 # set the timeout settings
-d.SetTimeouts(standby, suspend, off)
+d.set_timeouts(standby, suspend, off)
 
 # enable/disable DPMS
-if(enabled):
-    d.Enable()
+if enabled:
+    d.enable()
 else:
-    d.Disable()
+    d.disable()
 
 # force DPMS to a certain level
-d.ForceLevel(level)
+d.force_level(level)
 
 # if you wanted to force the monitor off, you could
-# d.ForceLevel(dpms.DPMSModeOff)
+# d.force_level(dpms.DPMSModeOff)
 
 # to force it back on
-# d.ForceLevel(dpms.DPMSModeOn)
+# d.force_level(dpms.DPMSModeOn)
 
 # You can also suspend or standby
-# d.ForceLevel(dpms.DPMSModeSuspend)
-# d.ForceLevel(dpms.DPMSModeStandby)
+# d.force_level(dpms.DPMSModeSuspend)
+# d.force_level(dpms.DPMSModeStandby)

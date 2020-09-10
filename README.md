@@ -22,7 +22,7 @@ within an X11 session. They do not work from a console outside of X11.
 
 # Install
 
-Install libXext and python development packages installed. For example, on
+Install `libXext` and `python` development packages installed. For example, on
 RedHat/Fedora:
 
     # yum install libXext-devel python-devel
@@ -48,19 +48,19 @@ Then as root, run:
 
     # python setup.py install
 
-If you prefer, you can also build it inside a virtualenv, without root:
+If you prefer, you can also build it inside a venv, without root:
 
-    $ virtualenv venv
+    $ python -m venv venv
     $ source venv/bin/activate
     $ python setup.py install
 
 That's it. Now run:
 
-    $ python example.py
+    $ python scripts/example.py
 
 to test it out. Also try the `turnoff.py` script:
 
-    $ python turnoff.py
+    $ python scripts/turnoff.py
 
 It should turn off your monitor after a 1 second wait. Press any key to wake it
 back up.

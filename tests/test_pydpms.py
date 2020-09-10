@@ -17,7 +17,7 @@ Your monitor may turnoff during these tests
 )
 
 
-def try_dpms(tries=3, wait_time=1, *args, **kwargs):
+def try_dpms(tries=5, wait_time=1, *args, **kwargs):
     for _ in range(tries):
         try:
             return dpms.DPMS(*args, **kwargs)
