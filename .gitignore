@@ -1,4 +1,3 @@
-# Ignore setup.py build directory
+*.pyc
 build/
-# Ignore virtualenv directories
 venv*/

@@ -6,23 +6,6 @@
 #include <X11/Xutil.h>
 #include <X11/extensions/dpms.h>
 
-/* http://python3porting.com/cextensions.html */
-#if PY_MAJOR_VERSION >= 3
-  #define MOD_ERROR_VAL NULL
-  #define MOD_SUCCESS_VAL(val) val
-  #define MOD_INIT(name) PyMODINIT_FUNC PyInit_##name(void)
-  #define MOD_DEF(ob, name, doc, methods) \
-          static struct PyModuleDef moduledef = { \
-            PyModuleDef_HEAD_INIT, name, doc, -1, methods, }; \
-          ob = PyModule_Create(&moduledef);
-#else
-  #define MOD_ERROR_VAL
-  #define MOD_SUCCESS_VAL(val)
-  #define MOD_INIT(name) void init##name(void)
-  #define MOD_DEF(ob, name, doc, methods) \
-          ob = Py_InitModule3(name, methods, doc);
-#endif
-
 typedef struct {
   PyObject_HEAD
   Display *dpy;
@@ -66,17 +49,17 @@ PyObject *pyDPMS_str(PyObject *self) {
   return PyUnicode_FromFormat("DPMS(display=%s)", XDisplayName(get_disp(((pyDPMSObject *) self)->display)));
 }
 
-static PyObject *pyDPMS_Display(pyDPMSObject* self) {
+static PyObject *pyDPMS_display(pyDPMSObject* self) {
   return PyUnicode_FromString(XDisplayName(get_disp(self->display)));
 }
 
-static PyObject *pyDPMS_QueryExtension(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *pyDPMS_query_extension(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
   int event_basep=0, error_basep=0;
   PyObject *result = PyBool_FromLong(DPMSQueryExtension(self->dpy, &event_basep, &error_basep));
   return Py_BuildValue("Nii", result, event_basep, error_basep);
 }
 
-static PyObject *pyDPMS_GetVersion(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *pyDPMS_get_version(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
   int major, minor;
   if (DPMSGetVersion(self->dpy, &major, &minor)) {
     return Py_BuildValue("ii", major, minor);
@@ -86,11 +69,11 @@ static PyObject *pyDPMS_GetVersion(pyDPMSObject *self, PyObject *args, PyObject 
   }
 }
 
-static PyObject *pyDPMS_Capable(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *pyDPMS_capable(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
   return PyBool_FromLong(DPMSCapable(self->dpy));
 }
 
-static PyObject *pyDPMS_GetTimeouts(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *pyDPMS_get_timeouts(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
   CARD16 standby, suspend, off;
   if(DPMSGetTimeouts(self->dpy, &standby, &suspend, &off)) {
     return Py_BuildValue("iii", standby, suspend, off);
@@ -100,7 +83,7 @@ static PyObject *pyDPMS_GetTimeouts(pyDPMSObject *self, PyObject *args, PyObject
   }
 }
 
-static PyObject *pyDPMS_SetTimeouts(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *pyDPMS_set_timeouts(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
   static char *kwlist[] = {"standby", "suspend", "off", NULL};
   CARD16 standby, suspend, off;
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "HHH", kwlist, &standby, &suspend, &off)) {
@@ -110,14 +93,14 @@ static PyObject *pyDPMS_SetTimeouts(pyDPMSObject *self, PyObject *args, PyObject
 
   Status ret = DPMSSetTimeouts(self->dpy, standby, suspend, off);
   if(ret == 1) {
-    return pyDPMS_GetTimeouts(self, args, kwds);
+    return pyDPMS_get_timeouts(self, args, kwds);
   } else {
     PyErr_SetString(PyExc_Exception, "Bad arguments");
     return NULL;
   }
 }
 
-static PyObject *pyDPMS_Enable(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *pyDPMS_enable(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
   if(DPMSEnable(self->dpy) == 1) {
     Py_RETURN_NONE;
   } else {
@@ -126,7 +109,7 @@ static PyObject *pyDPMS_Enable(pyDPMSObject *self, PyObject *args, PyObject *kwd
   }
 }
 
-static PyObject *pyDPMS_Disable(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *pyDPMS_disable(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
   if(DPMSDisable(self->dpy) == 1) {
     Py_RETURN_NONE;
   } else {
@@ -135,7 +118,7 @@ static PyObject *pyDPMS_Disable(pyDPMSObject *self, PyObject *args, PyObject *kw
   }
 }
 
-static PyObject *pyDPMS_ForceLevel(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *pyDPMS_force_level(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
   static char *kwlist[] = {"level", NULL};
   CARD16 level;
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "H", kwlist, &level)) {
@@ -155,7 +138,7 @@ static PyObject *pyDPMS_ForceLevel(pyDPMSObject *self, PyObject *args, PyObject 
   }
 }
 
-static PyObject *pyDPMS_Info(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *pyDPMS_info(pyDPMSObject *self, PyObject *args, PyObject *kwds) {
   CARD16 power_level;
   BOOL state;
   if(DPMSInfo(self->dpy, &power_level, &state) == 1) {
@@ -167,19 +150,17 @@ static PyObject *pyDPMS_Info(pyDPMSObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyMethodDef pyDPMS_methods[] = {
-    {"Display", (PyCFunction)pyDPMS_Display, METH_NOARGS, "Returns the display variable of this DPMS"},
-    {"QueryExtension", (PyCFunction)pyDPMS_QueryExtension, METH_NOARGS, "DPMSQueryExtension wrapper. Takes no arguments and returns a tuple (result bool, event_basep int, error_basep int)" },
-    {"GetVersion", (PyCFunction)pyDPMS_GetVersion, METH_NOARGS, "DPMSGetVersion wrapper. Returns tuple (major, minor) version upon success or throws exception." },
-    {"Capable", (PyCFunction)pyDPMS_Capable, METH_NOARGS, "DPMSCapable wrapper. Returns bool." },
-    {"GetTimeouts", (PyCFunction)pyDPMS_GetTimeouts, METH_NOARGS, "DPMSGetTimeouts wrapper. Returns tuple (standby, suspend, off) or raises an exception on error." },
-    {"SetTimeouts", (PyCFunction)pyDPMS_SetTimeouts, METH_VARARGS | METH_KEYWORDS, "DPMSSetTimeouts wrapper. Arguments are (int standby, int suspend, int off). Returns tuple with new values (standby, suspend, off). Raises Exception if an invalid timeouts provided." },
+    {"display", (PyCFunction)pyDPMS_display, METH_NOARGS, "Returns the display variable of this DPMS"},
+    {"query_extension", (PyCFunction)pyDPMS_query_extension, METH_NOARGS, "DPMSQueryExtension wrapper. Takes no arguments and returns a tuple (result bool, event_basep int, error_basep int)" },
+    {"get_version", (PyCFunction)pyDPMS_get_version, METH_NOARGS, "DPMSGetVersion wrapper. Returns tuple (major, minor) version upon success or throws exception." },
+    {"capable", (PyCFunction)pyDPMS_capable, METH_NOARGS, "DPMSCapable wrapper. Returns bool." },
+    {"get_timeouts", (PyCFunction)pyDPMS_get_timeouts, METH_NOARGS, "DPMSGetTimeouts wrapper. Returns tuple (standby, suspend, off) or raises an exception on error." },
+    {"set_timeouts", (PyCFunction)pyDPMS_set_timeouts, METH_VARARGS | METH_KEYWORDS, "DPMSSetTimeouts wrapper. Arguments are (int standby, int suspend, int off). Returns tuple with new values (standby, suspend, off). Raises Exception if an invalid timeouts provided." },
 
-    {"Enable", (PyCFunction)pyDPMS_Enable, METH_NOARGS, "DPMSEnable wrapper." },
-    {"Disable", (PyCFunction)pyDPMS_Disable, METH_NOARGS, "DPMSDisable wrapper." },
-    {"ForceLevel", (PyCFunction)pyDPMS_ForceLevel, METH_VARARGS | METH_KEYWORDS, "DPMSForceLevel wrapper. Arguments are (int level). Returns None. Raises Exception if an invalid level provided. Use DPMSModeOn, DPMSModeStandby, DPMSModeSuspend, DPMSModeOff module attributes for level." },
-    {"Info", (PyCFunction)pyDPMS_Info, METH_NOARGS, "DPMSInfo wrapper.  Returns tuple (power_level, state). Raises Exception on error." },
-    /* {"QueryExtension", (PyCFunction)pyDPMS_QueryExtension, METH_VARARGS | METH_KEYWORDS, "DPMSQueryExtension wrapper" }, */
-    /* {"copy", (PyCFunction)pyimg_copy, METH_NOARGS, "Returns a copy of the image where the image data is copied." }, */
+    {"enable", (PyCFunction)pyDPMS_enable, METH_NOARGS, "DPMSEnable wrapper." },
+    {"disable", (PyCFunction)pyDPMS_disable, METH_NOARGS, "DPMSDisable wrapper." },
+    {"force_level", (PyCFunction)pyDPMS_force_level, METH_VARARGS | METH_KEYWORDS, "DPMSForceLevel wrapper. Arguments are (int level). Returns None. Raises Exception if an invalid level provided. Use DPMSModeOn, DPMSModeStandby, DPMSModeSuspend, DPMSModeOff module attributes for level." },
+    {"info", (PyCFunction)pyDPMS_info, METH_NOARGS, "DPMSInfo wrapper.  Returns tuple (power_level, state). Raises Exception on error." },
     {NULL}  /* Sentinel */
 };
 
@@ -232,22 +213,29 @@ static PyMethodDef dpms_methods[] = {
 #define PyMODINIT_FUNC void
 #endif
 
-MOD_INIT(dpms) {
+PyMODINIT_FUNC PyInit_dpms(void) {
     PyObject* module;
 
     pyDPMSType.tp_new = PyType_GenericNew;
     if (PyType_Ready(&pyDPMSType) < 0)
-        return MOD_ERROR_VAL;
+        return NULL;
 
     Py_INCREF(&pyDPMSType);
 
-    MOD_DEF(module, "dpms", "Python bindings to DPMS X11 Extension", dpms_methods);
+    static struct PyModuleDef moduledef = {
+      PyModuleDef_HEAD_INIT,
+      "dpms",
+      "Python bindings to DPMS X11 Extension",
+      -1,
+      dpms_methods,
+    };
 
+    module = PyModule_Create(&moduledef);
     PyModule_AddObject(module, "DPMS",            (PyObject *)&pyDPMSType);
     PyModule_AddObject(module, "DPMSModeOn",      PyLong_FromLong(DPMSModeOn     ));
     PyModule_AddObject(module, "DPMSModeStandby", PyLong_FromLong(DPMSModeStandby));
     PyModule_AddObject(module, "DPMSModeSuspend", PyLong_FromLong(DPMSModeSuspend));
     PyModule_AddObject(module, "DPMSModeOff",     PyLong_FromLong(DPMSModeOff    ));
 
-    return MOD_SUCCESS_VAL(module);
+    return module;
 }
