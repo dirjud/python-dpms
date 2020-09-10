@@ -5,6 +5,15 @@ import os
 import sys
 import unittest
 
+print(
+    """\
+===========================================
+Your monitor may turnoff during these tests
+===========================================\
+""",
+    file=sys.stderr,
+)
+
 
 class TestDpms(unittest.TestCase):
     def setUp(self):
@@ -81,7 +90,6 @@ class TestDpms(unittest.TestCase):
             self.d.force_level(level=1000)
 
         if self.dpms_status:
-            print("\nYour monitor may turnoff during this test", file=sys.stderr)
             self.d.force_level(level=dpms.DPMSModeOn)
             self.d.force_level(level=dpms.DPMSModeStandby)
             self.d.force_level(level=dpms.DPMSModeSuspend)
